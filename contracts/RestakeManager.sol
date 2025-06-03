@@ -124,13 +124,15 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
 
     /// @dev Get the length of the operator delegators array
     function getOperatorDelegatorsLength() external view returns (uint256) {
-        return operatorDelegators.length;
+        return operatorDelegators.length;  //Returns the current number of OperatorDelegator contracts that have been added to the protocol.
     }
 
     /// @dev Allows a restake manager admin to add an OperatorDelegator to the list
+///  there could have been a bug , by adding address (0) or any other address, but since they this role is trusted.
+/// new address get pushed to last eleemt in array.
     function addOperatorDelegator(
-        IOperatorDelegator _newOperatorDelegator,
-        uint256 _allocationBasisPoints
+        IOperatorDelegator _newOperatorDelegator, //The address of the new IOperatorDelegator contract.
+        uint256 _allocationBasisPoints   //The percentage (in basis points) of total TVL that this OD is allocated to manage.
     ) external onlyRestakeManagerAdmin {
         // Ensure it is not already in the list
         uint256 odLength = operatorDelegators.length;
@@ -143,18 +145,21 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
         }
 
         // Verify a valid allocation
-        if (_allocationBasisPoints > (100 * BASIS_POINTS)) revert OverMaxBasisPoints();
+        if (_allocationBasisPoints > (100 * BASIS_POINTS)) revert OverMaxBasisPoints(); // here _allocationBasisPoints can be upto 10,000
 
         // Add it to the list
-        operatorDelegators.push(_newOperatorDelegator);
+        operatorDelegators.push(_newOperatorDelegator);  
 
         emit OperatorDelegatorAdded(_newOperatorDelegator);
 
-        // Set the allocation
+        // Set the allocation basis pont based on address of delegators
         operatorDelegatorAllocations[_newOperatorDelegator] = _allocationBasisPoints;
 
         emit OperatorDelegatorAllocationUpdated(_newOperatorDelegator, _allocationBasisPoints);
     }
+
+
+
 
     /// @dev Allows a restake manager admin to remove an OperatorDelegator from the list
     function removeOperatorDelegator(
@@ -170,6 +175,7 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
 
                 // Remove from list
                 operatorDelegators[i] = operatorDelegators[operatorDelegators.length - 1];
+// here you are putting last element at "I" position , then pop out the last position.
                 operatorDelegators.pop();
                 emit OperatorDelegatorRemoved(_operatorDelegatorToRemove);
                 return;
@@ -203,7 +209,7 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
                 ++i;
             }
         }
-        if (!foundOd) revert NotFound();
+        if (!foundOd) revert NotFound(); // whatever condition you put in if(0 , must comes out to be true.
 
         // Set the allocation
         operatorDelegatorAllocations[_operatorDelegator] = _allocationBasisPoints;
@@ -212,11 +218,16 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
     }
 
     /// @dev Allows a restake manager admin to set the max TVL for deposits.  If set to 0, no deposits will be enforced.
+///If _maxDepositTVL is set to a value greater than 0, all subsequent deposits will be checked against this limit. 
+/// If a new deposit would cause the total TVL to exceed this _maxDepositTVL, the deposit transaction will revert.
+/// It sets a protocol-wide maximum limit on the sum of all deposited assets (ETH and various ERC20 collateral tokens), converted to their ETH equivalent value.
     function setMaxDepositTVL(uint256 _maxDepositTVL) external onlyRestakeManagerAdmin {
         maxDepositTVL = _maxDepositTVL;
     }
 
     /// @dev Allows restake manager to add a collateral token
+/// An EOA (Externally Owned Account): No contract code, so calling decimals() or safeTransferFrom on it would revert.
+///Purpose: Adds a new ERC20 token to the list of supported collateral tokens that users can deposit.
     function addCollateralToken(IERC20 _newCollateralToken) external onlyRestakeManagerAdmin {
         // Ensure it is not already in the list
         uint256 tokenLength = collateralTokens.length;
@@ -262,7 +273,7 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
         revert NotFound();
     }
 
-    /// @dev Get the length of the collateral tokens array
+    /// @dev Get the length of the collateral tokens array // how many diffrent type of icer20 token it has 
     function getCollateralTokensLength() external view returns (uint256) {
         return collateralTokens.length;
     }
@@ -271,6 +282,7 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
     /// @return operatorDelegatorTokenTVLs Each OD's TVL indexed by operatorDelegators array by collateralTokens array
     /// @return operatorDelegatorTVLs Each OD's Total TVL in order of operatorDelegators array
     /// @return totalTVL The total TVL across all operator delegators.
+
     function calculateTVLs() public view returns (uint256[][] memory, uint256[] memory, uint256) {
         uint256[][] memory operatorDelegatorTokenTVLs = new uint256[][](operatorDelegators.length);
         uint256[] memory operatorDelegatorTVLs = new uint256[](operatorDelegators.length);
