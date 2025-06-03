@@ -284,16 +284,19 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
     /// @return totalTVL The total TVL across all operator delegators.
 
     function calculateTVLs() public view returns (uint256[][] memory, uint256[] memory, uint256) {
-        uint256[][] memory operatorDelegatorTokenTVLs = new uint256[][](operatorDelegators.length);
+        uint256[][] memory operatorDelegatorTokenTVLs = new uint256[][](operatorDelegators.length); // array inside array. length of outer array is defined.
         uint256[] memory operatorDelegatorTVLs = new uint256[](operatorDelegators.length);
         uint256 totalTVL = 0;
 
-        // Iterate through the ODs
-        uint256 odLength = operatorDelegators.length;
 
-        // flag for withdrawal queue balance set
-        bool withdrawQueueTokenBalanceRecorded = false;
-        address withdrawQueue = address(depositQueue.withdrawQueue());
+        uint256 odLength = operatorDelegators.length;
+ // flag for withdrawal queue balance set
+bool withdrawQueueTokenBalanceRecorded = false;
+
+
+address withdrawQueue = address(depositQueue.withdrawQueue());    // here depositQueue represents address of IDepositQueue and inside IDepositQueue
+//there is a public state variable which is withdrawQueue , when public state variable is created then , solidity automatically creates a public geeter function as
+withdrawQueue() which return s value stored in withdrawQueue state variable , which is address of IWithdrawQueue.
 
         // withdrawalQueue total value
         uint256 totalWithdrawalQueueValue = 0;
@@ -303,8 +306,9 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
             uint256 operatorTVL = 0;
 
             // Track the individual token TVLs for this OD - native ETH will be last item in the array
-            uint256[] memory operatorValues = new uint256[](collateralTokens.length + 1);
-            operatorDelegatorTokenTVLs[i] = operatorValues;
+            uint256[] memory operatorValues = new uint256[](collateralTokens.length + 1);  //This is the expression that determines the size (length) of the new array.
+            operatorDelegatorTokenTVLs[i] = operatorValues; // here we re putting inner array of length (collateralTokens.length + 1)
+              //here they also store value for stacked etherium.
 
             // Iterate through the tokens and get the value of each
             uint256 tokenLength = collateralTokens.length;
@@ -313,19 +317,19 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
 
                 uint256 operatorBalance = operatorDelegators[i].getTokenBalanceFromStrategy(
                     collateralTokens[j]
-                );
+                );   // first delegator's first token balance //Look into all the underlying "strategies" that this token is currently employing.
 
                 // Set the value in the array for this OD
                 operatorValues[j] = renzoOracle.lookupTokenValue(
                     collateralTokens[j],
                     operatorBalance
-                );
+                );  // it will return total value of your total balnce from oracle lookup. 5 token* 2 per token value=10
 
                 // Add it to the total TVL for this OD
                 operatorTVL += operatorValues[j];
 
                 // record token value of withdraw queue
-                if (!withdrawQueueTokenBalanceRecorded) {
+                if (!withdrawQueueTokenBalanceRecorded) {   // here it has wrong implementation only true for when [0][0] but fter [0][1] --> wrong.
                     totalWithdrawalQueueValue += renzoOracle.lookupTokenValue(
                         collateralTokens[i],
                         collateralTokens[j].balanceOf(withdrawQueue)
@@ -344,7 +348,7 @@ contract RestakeManager is Initializable, ReentrancyGuardUpgradeable, RestakeMan
             operatorValues[operatorValues.length - 1] = operatorEthBalance;
 
             // Add it to the total TVL for this OD
-            operatorTVL += operatorEthBalance;
+            operatorTVL += operatorEthBalance;   
 
             // Add it to the total TVL for the protocol
             totalTVL += operatorTVL;
