@@ -634,12 +634,16 @@ withdrawQueue() which return s value stored in withdrawQueue state variable , wh
 
     /// @dev Called by the deposit queue to stake ETH to a validator
     /// Only callable by the deposit queue
+/// here it sends the operator delegator .stakeEth(), the eth amount along with pubkey,signature,depositDataRoot , stakeEth() function sends
+//the eth ,pubkey,signature,depositDataRoot to eigenPodManager.stake() , then it checks if pod address exists or not mapped to operator delegator address 
+//, if no then create a new pod if it does exist , then send the the eth amount along with pubkey,signature,depositDataRoot , to the pod address
+//pod.stake{value: msg.value}(pubkey, signature, depositDataRoot); and then return in delegator .stakeEth() function will then  stakedButNotVerifiedEth += msg.value;
     function stakeEthInOperatorDelegator(
         IOperatorDelegator operatorDelegator,
         bytes calldata pubkey,
         bytes calldata signature,
         bytes32 depositDataRoot
-    ) external payable onlyDepositQueue {
+    ) external payable onlyDepositQueue {  // the new operator delgator address needs to be added in addOperatordelegator before it can accessed through "operatorDelegators"
         // Verify the OD is in the list
         bool found = false;
         uint256 odLength = operatorDelegators.length;
