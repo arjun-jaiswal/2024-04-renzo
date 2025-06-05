@@ -251,6 +251,7 @@ contract DepositQueue is Initializable, ReentrancyGuardUpgradeable, DepositQueue
 
     /// @dev Sweeps any accumulated ERC20 tokens in this contract to the RestakeManager
     /// Only callable by a permissioned account
+/// thsi function can be exploited if feeBasisPoints  is not set and it is 0 , then all amount of this contract will go in strategy , reard address will recieve nothing.
     function sweepERC20(IERC20 token) external onlyERC20RewardsAdmin {
         uint256 balance = IERC20(token).balanceOf(address(this));
         if (balance > 0) {
