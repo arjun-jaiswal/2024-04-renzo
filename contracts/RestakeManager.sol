@@ -698,7 +698,8 @@ function stakeEthInOperatorDelegator(
         uint256 totalRewards = 0;
 
         // First get the ETH rewards tracked in the deposit queue
-        totalRewards += depositQueue.totalEarned(address(0x0));
+        totalRewards += depositQueue.totalEarned(address(0x0));  // there is mapping -->  mapping(address => uint256) public totalEarned;
+// here totalEarned() is getter function , which will get value based on key to value mapping.
 
         // For each token, get the total rewards earned from the deposit queue and price it in ETH
         uint256 tokenLength = collateralTokens.length;
