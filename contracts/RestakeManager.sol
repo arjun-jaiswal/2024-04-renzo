@@ -638,7 +638,8 @@ withdrawQueue() which return s value stored in withdrawQueue state variable , wh
 //the eth ,pubkey,signature,depositDataRoot to eigenPodManager.stake() , then it checks if pod address exists or not mapped to operator delegator address 
 //, if no then create a new pod if it does exist , then send the the eth amount along with pubkey,signature,depositDataRoot , to the pod address
 //pod.stake{value: msg.value}(pubkey, signature, depositDataRoot); and then return in delegator .stakeEth() function will then  stakedButNotVerifiedEth += msg.value;
-    function stakeEthInOperatorDelegator(
+ // it received from restakemanger   stakeEthInOperatorDelegator()
+function stakeEthInOperatorDelegator(
         IOperatorDelegator operatorDelegator,
         bytes calldata pubkey,
         bytes calldata signature,
