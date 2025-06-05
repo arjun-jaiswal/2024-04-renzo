@@ -565,7 +565,8 @@ withdrawQueue() which return s value stored in withdrawQueue state variable , wh
             _amount -= bufferToFill;
 
             // safe Approve for depositQueue
-            _collateralToken.safeApprove(address(depositQueue), bufferToFill);
+            _collateralToken.safeApprove(address(depositQueue), bufferToFill);  // here bufferToFill=0 when amount provided by uers ==0
+// not the modified amount ( _amount -= bufferToFill;)
 
             // fill Withdraw Buffer via depositQueue
             depositQueue.fillERC20withdrawBuffer(address(_collateralToken), bufferToFill);
