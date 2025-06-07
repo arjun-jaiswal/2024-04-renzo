@@ -718,6 +718,9 @@ function stakeEthInOperatorDelegator(
         // For each OperatorDelegator, get the balance (these are rewards from staking that have not been restaked)
         // Funds in OD's EigenPod are assumed to be rewards in M1 until exiting validators or withdrawals are supported
         // Pending unstaked delayed withdrawal amounts are pending being routed into the DepositQueue after a delay
+////address(operatorDelegators[i].eigenPod()).balance represents rewards that originated directly from the staking activities of validators on the Beacon Chain.
+////These rewards have been withdrawn from the Beacon Chain and are now held in the specific EigenPod addresses controlled by the OperatorDelegator contracts.
+//// question:--> is is eth or erc20 tokens , is it the combination of rc20 token.
         uint256 odLength = operatorDelegators.length;
         for (uint256 i = 0; i < odLength; ) {
             totalRewards += address(operatorDelegators[i].eigenPod()).balance;
