@@ -10,6 +10,7 @@ import "../Errors/Errors.sol";
 contract DepositQueue is Initializable, ReentrancyGuardUpgradeable, DepositQueueStorageV2 {
     using SafeERC20 for IERC20;
 
+//It's important to understand that 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE is not an address with a known private key. Any ETH sent to it would effectively be unrecoverable, much like sending it to a burn address
     address public constant IS_NATIVE = 0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE;
 
     event RewardsDeposited(IERC20 token, uint256 amount);
@@ -120,6 +121,7 @@ contract DepositQueue is Initializable, ReentrancyGuardUpgradeable, DepositQueue
     /// @dev Handle ETH sent to the protocol through the RestakeManager - e.g. user deposits
     /// ETH will be stored here until used for a validator deposit
     /// Fill the ETH withdraw buffer if required
+
     function depositETHFromProtocol() external payable onlyRestakeManager {
         _checkAndFillETHWithdrawBuffer(msg.value);
         emit ETHDepositedFromProtocol(msg.value);
