@@ -162,7 +162,7 @@ contract DepositQueue is Initializable, ReentrancyGuardUpgradeable, DepositQueue
     /// Checks the ETH withdraw Queue and fills up if required
     receive() external payable nonReentrant {
         uint256 feeAmount = 0;
-        // Take protocol cut of rewards if enabled
+        // if protocol has set the feebasis point >0 and address is set for feeaddress , then it will chanage the variable feeAmount and sent fee to fee address.
         if (feeAddress != address(0x0) && feeBasisPoints > 0) {
             feeAmount = (msg.value * feeBasisPoints) / 10000;
             (bool success, ) = feeAddress.call{ value: feeAmount }("");
@@ -170,7 +170,7 @@ contract DepositQueue is Initializable, ReentrancyGuardUpgradeable, DepositQueue
 
             emit ProtocolFeesPaid(IERC20(address(0x0)), feeAmount, feeAddress);
         }
-        // update remaining rewards
+        // update remaining rewards when fee amount is > 0
         uint256 remainingRewards = msg.value - feeAmount;
         // Check and fill ETH withdraw buffer if required
         _checkAndFillETHWithdrawBuffer(remainingRewards);
