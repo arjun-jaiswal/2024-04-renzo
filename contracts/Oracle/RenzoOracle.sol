@@ -67,7 +67,7 @@ contract RenzoOracle is
 
     /// @dev Given a single token and balance, return value of the asset in underlying currency
     /// The value returned will be denominated in the decimal precision of the lookup oracle
-    /// (e.g. a value of 100 would return as 100 * 10^18)
+    /// (e.g. a value of 100 would return as 100 * 10^18)  in scale. it should be in wei
     function lookupTokenValue(IERC20 _token, uint256 _balance) public view returns (uint256) {
         AggregatorV3Interface oracle = tokenOracleLookup[_token];
         if (address(oracle) == address(0x0)) revert OracleNotFound();
